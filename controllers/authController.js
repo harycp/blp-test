@@ -41,7 +41,7 @@ exports.login = async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.cookie("token", token, { httpOnly: true, secure: false }); // Set `secure: true` in production with HTTPS
+    res.cookie("token", token, { httpOnly: true, secure: false });
     req.flash("flash_message", "Logged in successfully");
     res.redirect("/books");
   } catch (error) {

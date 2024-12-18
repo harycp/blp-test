@@ -33,30 +33,28 @@
         </thead>
         <tbody>
           <tr>
-            <td><%= books.title %></td>
-            <td><%= books.author %></td>
-            <td><%= books.pages %></td>
+            <td><%= book.title %></td>
+            <td><%= book.author %></td>
+            <td><%= book.pages %></td>
             <td>
               <a
                 style="text-decoration: none"
-                href="/books/?genre=<%= books.genre %>"
-                ><%= books.genre %></a
+                href="/books/?genre=<%= book.genre %>"
+                ><%= book.genre %></a
               >
             </td>
-            <td><%= books.year %></td>
-            <td><%= books.language %></td>
+            <td><%= book.year %></td>
+            <td><%= book.language %></td>
           </tr>
         </tbody>
       </table>
     </section>
 
     <div style="display: flex; flex-direction: row">
-      <form action="/books/<%= books._id %>?_method=DELETE" method="post">
+      <form action="/books/<%= book._id %>?_method=DELETE" method="post">
         <button class="btn btn-outline-danger" type="submit">Delete</button>
       </form>
-      <a
-        class="ms-3 btn btn-outline-success"
-        href="/books/<%= books._id %>/edit"
+      <a class="ms-3 btn btn-outline-success" href="/books/<%= book._id %>/edit"
         >Edit</a
       >
     </div>

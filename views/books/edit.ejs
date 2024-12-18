@@ -17,42 +17,42 @@
   </head>
   <body class="container">
     <h1>Edit book item</h1>
-    <form action="/books/<%= books._id %>?_method=PUT" method="POST">
+    <form action="/books/<%= book._id %>?_method=PUT" method="POST">
       <div class="mb-3">
         <label class="form-label" for="title">Title of book</label>
-        <input class="form-control" type="text" name="title" id="title" value="<%= books.title %>" />
+        <input class="form-control" type="text" name="title" id="title" value="<%= book.title %>" />
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="author">Author</label>
-        <input class="form-control" type="text" name="author" id="author" value="<%= books.author %>" />
+        <input class="form-control" type="text" name="author" id="author" value="<%= book.author %>" />
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="pages">Pages</label>
-        <input class="form-control" type="number" name="pages" id="pages" value="<%= books.pages %>" />
+        <input class="form-control" type="number" name="pages" id="pages" value="<%= book.pages %>" />
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="genre">Genre</label>
         <select class="form-select" name="genre" id="genre">
-          <option value="fiction" <%= books.genre == "fiction" ? "selected" : "" %>>Fiction</option>
-          <option value="non-fiction" <%= books.genre == "non-fiction" ? "selected" : "" %>>Non-fiction</option>
-          <option value="thriller" <%= books.genre == "thriller" ? "selected" : "" %>>Thriller</option>
-          <option value="romance" <%= books.genre == "romance" ? "selected" : "" %>>Romance</option>
-          <option value="history" <%= books.genre == "history" ? "selected" : "" %>>History</option>
-          <option value="philosophy" <%= books.genre == "philosophy" ? "selected" : "" %>>Philosophy</option>
+          <option value="fiction" <%= book.genre == "fiction" ? "selected" : "" %>>Fiction</option>
+          <option value="non-fiction" <%= book.genre == "non-fiction" ? "selected" : "" %>>Non-fiction</option>
+          <option value="thriller" <%= book.genre == "thriller" ? "selected" : "" %>>Thriller</option>
+          <option value="romance" <%= book.genre == "romance" ? "selected" : "" %>>Romance</option>
+          <option value="history" <%= book.genre == "history" ? "selected" : "" %>>History</option>
+          <option value="philosophy" <%= book.genre == "philosophy" ? "selected" : "" %>>Philosophy</option>
         </select>
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="year">Year</label>
-        <input class="form-control" type="number" name="year" id="year" value="<%= books.year %>"/>
+        <input class="form-control" type="number" name="year" id="year" value="<%= book.year %>"/>
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="language">Language</label>
-        <input class="form-control" type="text" name="language" id="language" value="<%= books.language %>"/>
+        <input class="form-control" type="text" name="language" id="language" value="<%= book.language %>"/>
       </div>
 
       <button class="btn btn-outline-success mb-4" type="submit">Submit</button>

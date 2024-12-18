@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const authRoutes = require("./routes/authRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
+const methodOverride = require("method-override");
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use(
     saveUninitialized: false,
   })
 );
+app.use(methodOverride("_method"));
 app.use(flash());
 
 app.use((req, res, next) => {
@@ -37,6 +39,10 @@ mongoose
   })
   .then(() => console.log("Database connected"))
   .catch((err) => console.error(err));
+
+app.get("/", (req, res) => {
+  res.render("home");
+});
 
 // Routes
 app.use(authRoutes);
