@@ -7,7 +7,6 @@ router.get("/", notAuth, (req, res) => {
   res.render("index");
 });
 
-// Routes untuk register, login, logout
 router.get("/register", (req, res) => {
   res.render("register");
 });

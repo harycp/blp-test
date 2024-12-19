@@ -19,7 +19,6 @@
     <div class="row">
       <div class="col">
         <h1><%= genre %> Books Data</h1>
-
         <% if(genre !== "All"){ %>
         <a class="btn btn-outline-success" href="/books">All Data</a>
         <% } %>
@@ -46,11 +45,11 @@
           <td><%= books[i].title %></td>
           <td><%= books[i].author %></td>
           <td class="text-center d-flex">
-            <a href="/books/<%= books[i]._id %>">
+            <a href="/books/<%= books[i].encryptedId %>">
               <i class="fa fa-edit" style="font-size: 24px; color: black"></i
             ></a>
             <form
-              action="/books/<%= books[i]._id %>?_method=DELETE"
+              action="/books/<%= books[i].encryptedId %>?_method=DELETE"
               method="post"
             >
               <button class="border-0 bg-transparent" type="submit">

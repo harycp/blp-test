@@ -66,10 +66,15 @@
     </section>
 
     <div style="display: flex; flex-direction: row">
-      <form action="/books/<%= book._id %>?_method=DELETE" method="post">
+      <form
+        action="/books/<%= book.encryptedId %>?_method=DELETE"
+        method="post"
+      >
         <button class="btn btn-outline-danger" type="submit">Delete</button>
       </form>
-      <a class="ms-3 btn btn-outline-success" href="/books/<%= book._id %>/edit"
+      <a
+        class="ms-3 btn btn-outline-success"
+        href="/books/<%= book.encryptedId %>/edit"
         >Edit</a
       >
     </div>

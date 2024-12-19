@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const SECRET = process.env.SECRET;
 
-// Register user
 exports.register = async (req, res) => {
   const { username, password } = req.body;
   req.flash("flash_message", "Please fill in all fields");
@@ -24,7 +23,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login user
 exports.login = async (req, res) => {
   const { username, password } = req.body;
 
@@ -53,7 +51,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// Logout user
 exports.logout = (req, res) => {
   res.clearCookie("token");
   req.flash("flash_message", "Logged out successfully");

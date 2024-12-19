@@ -10,7 +10,7 @@ const upload = multer({
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Invalid file type. Only JPG, JPEG, and PNG are allowed.")); // Error jika tipe file tidak sesuai
+      cb(new Error("Invalid file type. Only JPG, JPEG, and PNG are allowed."));
     }
   },
 });

@@ -2,6 +2,7 @@ const Book = require("../models/books");
 const BlobContent = require("../models/blobContent");
 const BlobBook = require("../models/blobBook");
 const fs = require("fs");
+const { encrypt, decrypt } = require("../utils/crypto");
 
 exports.index = async (req, res) => {
   try {
@@ -10,8 +11,18 @@ exports.index = async (req, res) => {
       ? { genre, user: req.user._id }
       : { user: req.user._id };
     const books = await Book.find(filter).sort({ title: "asc" });
-    res.render("books/index", { books, genre: genre || "All" });
+
+    const booksWithEncryptedIds = books.map((book) => ({
+      ...book.toObject(),
+      encryptedId: encrypt(book._id.toString()),
+    }));
+
+    res.render("books/index", {
+      books: booksWithEncryptedIds,
+      genre: genre || "All",
+    });
   } catch (err) {
+    console.log(err);
     res.status(500).redirect("/login");
   }
 };
@@ -47,7 +58,6 @@ exports.store = async (req, res) => {
     req.flash("flash_message", "Book created successfully");
     res.redirect("/books");
   } catch (err) {
-    console.error("Error creating book or saving blob:", err);
     req.flash("flash_message", "Failed to create book");
     res.status(500).redirect("/books");
   }
@@ -55,13 +65,19 @@ exports.store = async (req, res) => {
 
 exports.show = async (req, res) => {
   try {
-    const { id } = req.params;
+    const encryptedId = req.params.id;
+    const id = decrypt(encryptedId);
 
-    const book = await Book.findById(id).populate("user");
+    const book = await Book.findById(id).populate({
+      path: "user",
+      select: "_id",
+    });
 
     if (!book) {
       return res.status(404).send("Book not found");
     }
+
+    book.encryptedId = encryptedId;
 
     const blobBook = await BlobBook.findOne({ id_book: book._id });
 
@@ -74,6 +90,7 @@ exports.show = async (req, res) => {
         base64Image = blobContent.content;
       }
     }
+
     res.render("books/show", { book, blobContent, base64Image });
   } catch (err) {
     console.error(err);
@@ -83,7 +100,9 @@ exports.show = async (req, res) => {
 
 exports.edit = async (req, res) => {
   try {
-    const { id } = req.params;
+    const encryptedId = req.params.id;
+    const id = decrypt(encryptedId);
+
     const book = await Book.findById(id);
     const blobBook = await BlobBook.findOne({ id_book: book._id });
 
@@ -91,6 +110,8 @@ exports.edit = async (req, res) => {
     if (blobBook) {
       blobContent = await BlobContent.findById(blobBook.id_blob);
     }
+
+    book.encryptedId = encryptedId;
 
     res.render("books/edit", { book, blobContent });
   } catch (err) {
@@ -100,9 +121,10 @@ exports.edit = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { file } = req;
+    const encryptedId = req.params.id;
+    const id = decrypt(encryptedId);
 
+    const { file } = req;
     const updatedBook = await Book.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
@@ -132,7 +154,7 @@ exports.update = async (req, res) => {
     }
 
     req.flash("flash_message", "Book updated successfully");
-    res.redirect(`/books`);
+    res.redirect("/books");
   } catch (err) {
     req.flash("flash_message", "Failed to update book");
     res.status(500).redirect("/books");
@@ -141,19 +163,18 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    const { id } = req.params;
+    const encryptedId = req.params.id;
+    const id = decrypt(encryptedId);
 
     const blobBook = await BlobBook.findOne({ id_book: id });
 
     if (blobBook) {
       const blobContent = await BlobContent.findById(blobBook.id_blob);
       if (blobContent) {
-        // Hapus BlobContent
         await BlobContent.findByIdAndDelete(blobContent._id);
       }
 
       await BlobBook.findByIdAndDelete(blobBook._id);
-    } else {
     }
 
     const book = await Book.findByIdAndDelete(id);

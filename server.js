@@ -32,7 +32,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Connect to MongoDB
 mongoose
   .connect(MONGO_URI, {
     useNewUrlParser: true,
@@ -45,7 +44,6 @@ app.get("/", (req, res) => {
   res.render("home");
 });
 
-// Routes
 app.use(authRoutes);
 app.use(bookRoutes);
 
@@ -53,7 +51,6 @@ app.get("/admin", authMiddleware, (req, res) => {
   res.render("admin", { username: req.user.username });
 });
 
-// Start server
 app.listen(8080, () => {
   console.log("Server started on http://localhost:8080");
 });
