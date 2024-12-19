@@ -108,8 +108,6 @@ exports.update = async (req, res) => {
       runValidators: true,
     });
 
-    console.log(req.body);
-
     if (file) {
       const base64File = req.file.buffer.toString("base64");
 
