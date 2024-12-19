@@ -143,33 +143,21 @@ exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Cari BlobBook terkait dengan id_book
     const blobBook = await BlobBook.findOne({ id_book: id });
 
     if (blobBook) {
-      console.log("BlobBook found:", blobBook);
-
-      // Cari BlobContent terkait
       const blobContent = await BlobContent.findById(blobBook.id_blob);
       if (blobContent) {
-        console.log("BlobContent found:", blobContent);
-
         // Hapus BlobContent
         await BlobContent.findByIdAndDelete(blobContent._id);
-      } else {
-        console.warn("BlobContent not found for id_blob:", blobBook.id_blob);
       }
 
-      // Hapus BlobBook
       await BlobBook.findByIdAndDelete(blobBook._id);
     } else {
-      console.warn("BlobBook not found for id_book:", id);
     }
 
-    // Hapus Book
     const book = await Book.findByIdAndDelete(id);
     if (!book) {
-      console.warn("Book not found for id:", id);
       return res.status(404).send("Book not found");
     }
 
@@ -177,7 +165,6 @@ exports.delete = async (req, res) => {
     res.redirect("/books");
   } catch (err) {
     req.flash("flash_message", "Error deleting book");
-    console.error("Error deleting book:", err); // Log the error for debugging
     res.status(500).redirect("/books");
   }
 };
