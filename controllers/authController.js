@@ -5,6 +5,7 @@ const SECRET = "supersecretkey"; // Replace with environment variable
 // Register user
 exports.register = async (req, res) => {
   const { username, password } = req.body;
+  req.flash("flash_message", "Please fill in all fields");
   if (!username || !password) {
     req.flash("flash_message", "All fields are required");
     return res.redirect("/register");
