@@ -50,11 +50,10 @@
               <!-- Display Image (if available) -->
               <% if (blobContent && blobContent.content) { %>
               <div class="mt-4">
-                <h3>Book Image:</h3>
                 <img
                   src="data:<%= blobContent.mimeType %>;base64,<%= blobContent.content %>"
                   alt="Book Image"
-                  class="img-fluid"
+                  class="img-fluid w-25"
                 />
               </div>
               <% } else { %>

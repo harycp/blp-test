@@ -16,5 +16,10 @@ router.post(
 router.get("/books/:id", authMiddleware, bookController.show);
 router.get("/books/:id/edit", authMiddleware, bookController.edit);
 router.put("/books/:id", authMiddleware, bookController.update);
-router.delete("/books/:id", authMiddleware, bookController.delete);
+router.delete(
+  "/books/:id",
+  authMiddleware,
+  upload.single("file"),
+  bookController.delete
+);
 module.exports = router;

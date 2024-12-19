@@ -29,14 +29,12 @@ exports.store = async (req, res) => {
     await book.save();
 
     if (req.file) {
-      const fileBuffer = fs.readFileSync(req.file.path);
-      const base64File = fileBuffer.toString("base64");
+      const base64File = req.file.buffer.toString("base64");
 
       const blobContent = new BlobContent({
         content: base64File,
         mimeType: req.file.mimetype,
       });
-
       await blobContent.save();
 
       const blobBook = new BlobBook({
@@ -44,13 +42,12 @@ exports.store = async (req, res) => {
         id_blob: blobContent._id,
       });
       await blobBook.save();
-
-      await blobContent.save();
     }
 
     req.flash("flash_message", "Book created successfully");
     res.redirect("/books");
   } catch (err) {
+    console.error("Error creating book or saving blob:", err);
     req.flash("flash_message", "Failed to create book");
     res.status(500).redirect("/books");
   }
@@ -106,18 +103,16 @@ exports.update = async (req, res) => {
     const { id } = req.params;
     const { file } = req;
 
-    // Update Book Data
     const updatedBook = await Book.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
     });
 
-    if (file) {
-      // Handle file upload (if a new image is uploaded)
-      const fileBuffer = fs.readFileSync(file.path);
-      const base64File = fileBuffer.toString("base64");
+    console.log(req.body);
 
-      // Create a new BlobContent for the new file
+    if (file) {
+      const base64File = req.file.buffer.toString("base64");
+
       const newBlobContent = new BlobContent({
         content: base64File,
         mimeType: file.mimetype,
@@ -125,14 +120,11 @@ exports.update = async (req, res) => {
 
       await newBlobContent.save();
 
-      // Check if there's an existing BlobBook for this book
       const blobBook = await BlobBook.findOne({ id_book: updatedBook._id });
       if (blobBook) {
-        // If BlobBook exists, update it with the new BlobContent ID
         blobBook.id_blob = newBlobContent._id;
         await blobBook.save();
       } else {
-        // If BlobBook does not exist, create a new BlobBook entry
         const newBlobBook = new BlobBook({
           id_book: updatedBook._id,
           id_blob: newBlobContent._id,
@@ -153,32 +145,41 @@ exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Cari BlobBook terlebih dahulu
+    // Cari BlobBook terkait dengan id_book
     const blobBook = await BlobBook.findOne({ id_book: id });
 
-    // Jika ada BlobBook yang terkait, hapus BlobContent dan BlobBook
     if (blobBook) {
-      const blobContent = await BlobContent.findById(blobBook.id_blob);
+      console.log("BlobBook found:", blobBook);
 
+      // Cari BlobContent terkait
+      const blobContent = await BlobContent.findById(blobBook.id_blob);
       if (blobContent) {
-        await BlobContent.findByIdAndDelete(blobContent._id); // Hapus BlobContent
+        console.log("BlobContent found:", blobContent);
+
+        // Hapus BlobContent
+        await BlobContent.findByIdAndDelete(blobContent._id);
+      } else {
+        console.warn("BlobContent not found for id_blob:", blobBook.id_blob);
       }
 
-      await blobBook.delete(); // Hapus BlobBook
+      // Hapus BlobBook
+      await BlobBook.findByIdAndDelete(blobBook._id);
+    } else {
+      console.warn("BlobBook not found for id_book:", id);
     }
 
-    // Setelah BlobBook dan BlobContent terhapus, hapus Book
+    // Hapus Book
     const book = await Book.findByIdAndDelete(id);
-
     if (!book) {
+      console.warn("Book not found for id:", id);
       return res.status(404).send("Book not found");
     }
 
-    req.flash("flash_message", "Book and image deleted successfully");
+    req.flash("flash_message", "Book and related image deleted successfully");
     res.redirect("/books");
   } catch (err) {
     req.flash("flash_message", "Error deleting book");
-    console.error(err); // Log the error for debugging
+    console.error("Error deleting book:", err); // Log the error for debugging
     res.status(500).redirect("/books");
   }
 };
