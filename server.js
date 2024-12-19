@@ -15,7 +15,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://tilljannah.vercel.app",
+    origin: "https://blp-intern.vercel.app/",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
