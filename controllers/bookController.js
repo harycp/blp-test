@@ -3,11 +3,10 @@ const Book = require("../models/books");
 exports.index = async (req, res) => {
   try {
     const { genre } = req.query;
-    const books = genre
-      ? await Book.find({ genre })
-      : await Book.find({}).sort({
-          title: "asc",
-        });
+    const filter = genre
+      ? { genre, user: req.user._id }
+      : { user: req.user._id };
+    const books = await Book.find(filter).sort({ title: "asc" });
     // res.json(books);
     res.render("books/index", { books, genre: genre || "All" });
   } catch (err) {
@@ -22,6 +21,8 @@ exports.create = (req, res) => {
 exports.store = async (req, res) => {
   try {
     const bookData = req.body;
+    bookData.user = req.user._id;
+
     if (req.file) bookData.file = req.file.path;
     const book = new Book(bookData);
     await book.save();
