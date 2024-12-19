@@ -59,19 +59,27 @@ exports.store = async (req, res) => {
 exports.show = async (req, res) => {
   try {
     const { id } = req.params;
+
     const book = await Book.findById(id).populate("user");
 
-    // Find associated BlobBook and BlobContent
-    const blobBook = await BlobBook.findOne({ book: book._id }).populate(
-      "blob"
-    );
-    let blobContent = null;
-    if (blobBook) {
-      blobContent = await BlobContent.findById(blobBook.blob);
+    if (!book) {
+      return res.status(404).send("Book not found");
     }
 
-    res.render("books/show", { book, blobContent });
+    const blobBook = await BlobBook.findOne({ id_book: book._id });
+
+    let blobContent = null;
+    let base64Image = null;
+
+    if (blobBook) {
+      blobContent = await BlobContent.findById(blobBook.id_blob);
+      if (blobContent) {
+        base64Image = blobContent.content;
+      }
+    }
+    res.render("books/show", { book, blobContent, base64Image });
   } catch (err) {
+    console.error(err);
     res.status(500).send(err.message);
   }
 };

@@ -29,6 +29,7 @@
             <th scope="col">Genre</th>
             <th scope="col">Year</th>
             <th scope="col">Language</th>
+            <th scope="col">Gambar</th>
           </tr>
         </thead>
         <tbody>
@@ -45,6 +46,21 @@
             </td>
             <td><%= book.year %></td>
             <td><%= book.language %></td>
+            <td>
+              <!-- Display Image (if available) -->
+              <% if (blobContent && blobContent.content) { %>
+              <div class="mt-4">
+                <h3>Book Image:</h3>
+                <img
+                  src="data:<%= blobContent.mimeType %>;base64,<%= blobContent.content %>"
+                  alt="Book Image"
+                  class="img-fluid"
+                />
+              </div>
+              <% } else { %>
+              <p>No image available</p>
+              <% } %>
+            </td>
           </tr>
         </tbody>
       </table>
