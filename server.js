@@ -9,7 +9,9 @@ const authRoutes = require("./routes/authRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
 const methodOverride = require("method-override");
-const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
+const swaggerDocument = YAML.load("./swagger.yaml");
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.use(
 );
 app.use(methodOverride("_method"));
 app.use(flash());
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use((req, res, next) => {
   res.locals.flash_message = req.flash("flash_message");

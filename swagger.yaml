@@ -1,0 +1,206 @@
+openapi: 3.0.0
+info:
+  title: Book Management API
+  description: API untuk mengelola buku dan autentikasi pengguna.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      description: Endpoint untuk mendaftarkan pengguna baru.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Nama pengguna yang diinginkan.
+                password:
+                  type: string
+                  description: Kata sandi pengguna.
+              required:
+                - username
+                - password
+      responses:
+        "201":
+          description: User registered successfully
+        "400":
+          description: All fields are required
+        "500":
+          description: Error registering user
+
+  /login:
+    post:
+      summary: Login user
+      description: Endpoint untuk login pengguna.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Nama pengguna.
+                password:
+                  type: string
+                  description: Kata sandi pengguna.
+              required:
+                - username
+                - password
+      responses:
+        "200":
+          description: Logged in successfully
+        "400":
+          description: Both fields are required
+        "401":
+          description: Invalid username or password
+
+  /logout:
+    get:
+      summary: Logout user
+      description: Endpoint untuk logout pengguna.
+      responses:
+        "200":
+          description: Logged out successfully
+
+  /books:
+    get:
+      summary: Get list of books
+      description: Mengambil daftar buku untuk pengguna yang sudah login.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Daftar buku berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    title:
+                      type: string
+                    author:
+                      type: string
+                    genre:
+                      type: string
+        "401":
+          description: Unauthorized
+
+    post:
+      summary: Create a new book
+      description: Menambahkan buku baru ke dalam sistem.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                author:
+                  type: string
+                genre:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+              required:
+                - title
+                - author
+                - genre
+      responses:
+        "201":
+          description: Book created successfully
+        "400":
+          description: All fields are required
+        "500":
+          description: Failed to create book
+
+  /books/{id}:
+    get:
+      summary: Get a specific book by id
+      description: Mendapatkan buku berdasarkan ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID buku yang ingin diambil
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Book details retrieved successfully
+        "404":
+          description: Book not found
+
+    put:
+      summary: Update a specific book by id
+      description: Mengupdate data buku berdasarkan ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID buku yang ingin diupdate
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                author:
+                  type: string
+                genre:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Book updated successfully
+        "400":
+          description: Invalid input
+        "500":
+          description: Failed to update book
+
+    delete:
+      summary: Delete a specific book by id
+      description: Menghapus buku berdasarkan ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID buku yang ingin dihapus
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Book deleted successfully
+        "404":
+          description: Book not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
