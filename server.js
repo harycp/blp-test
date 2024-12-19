@@ -9,8 +9,17 @@ const authRoutes = require("./routes/authRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
 const methodOverride = require("method-override");
+const cors = require("cors");
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "https://tilljannah.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 const MONGO_URI = process.env.MONGO_URI;
 app.set("view engine", "ejs");
