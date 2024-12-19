@@ -13,14 +13,6 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "https://blp-intern.vercel.app/",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
 const MONGO_URI = process.env.MONGO_URI;
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
