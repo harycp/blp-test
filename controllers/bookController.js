@@ -88,7 +88,14 @@ exports.edit = async (req, res) => {
   try {
     const { id } = req.params;
     const book = await Book.findById(id);
-    res.render("books/edit", { book });
+    const blobBook = await BlobBook.findOne({ id_book: book._id });
+
+    let blobContent = null;
+    if (blobBook) {
+      blobContent = await BlobContent.findById(blobBook.id_blob);
+    }
+
+    res.render("books/edit", { book, blobContent });
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -97,10 +104,43 @@ exports.edit = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    await Book.findByIdAndUpdate(id, req.body, {
+    const { file } = req;
+
+    // Update Book Data
+    const updatedBook = await Book.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
     });
+
+    if (file) {
+      // Handle file upload (if a new image is uploaded)
+      const fileBuffer = fs.readFileSync(file.path);
+      const base64File = fileBuffer.toString("base64");
+
+      // Create a new BlobContent for the new file
+      const newBlobContent = new BlobContent({
+        content: base64File,
+        mimeType: file.mimetype,
+      });
+
+      await newBlobContent.save();
+
+      // Check if there's an existing BlobBook for this book
+      const blobBook = await BlobBook.findOne({ id_book: updatedBook._id });
+      if (blobBook) {
+        // If BlobBook exists, update it with the new BlobContent ID
+        blobBook.id_blob = newBlobContent._id;
+        await blobBook.save();
+      } else {
+        // If BlobBook does not exist, create a new BlobBook entry
+        const newBlobBook = new BlobBook({
+          id_book: updatedBook._id,
+          id_blob: newBlobContent._id,
+        });
+        await newBlobBook.save();
+      }
+    }
+
     req.flash("flash_message", "Book updated successfully");
     res.redirect(`/books`);
   } catch (err) {
@@ -112,18 +152,33 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
-    const book = await Book.findByIdAndDelete(id);
 
-    const blobBook = await BlobBook.findOne({ book: book._id });
+    // Cari BlobBook terlebih dahulu
+    const blobBook = await BlobBook.findOne({ id_book: id });
+
+    // Jika ada BlobBook yang terkait, hapus BlobContent dan BlobBook
     if (blobBook) {
-      await BlobContent.findByIdAndDelete(blobBook.blob);
-      await blobBook.delete();
+      const blobContent = await BlobContent.findById(blobBook.id_blob);
+
+      if (blobContent) {
+        await BlobContent.findByIdAndDelete(blobContent._id); // Hapus BlobContent
+      }
+
+      await blobBook.delete(); // Hapus BlobBook
     }
 
-    req.flash("flash_message", "Book deleted successfully");
+    // Setelah BlobBook dan BlobContent terhapus, hapus Book
+    const book = await Book.findByIdAndDelete(id);
+
+    if (!book) {
+      return res.status(404).send("Book not found");
+    }
+
+    req.flash("flash_message", "Book and image deleted successfully");
     res.redirect("/books");
   } catch (err) {
     req.flash("flash_message", "Error deleting book");
+    console.error(err); // Log the error for debugging
     res.status(500).redirect("/books");
   }
 };
