@@ -1,4 +1,7 @@
 const Book = require("../models/books");
+const BlobContent = require("../models/blobContent");
+const BlobBook = require("../models/blobBook");
+const fs = require("fs");
 
 exports.index = async (req, res) => {
   try {
@@ -7,7 +10,6 @@ exports.index = async (req, res) => {
       ? { genre, user: req.user._id }
       : { user: req.user._id };
     const books = await Book.find(filter).sort({ title: "asc" });
-    // res.json(books);
     res.render("books/index", { books, genre: genre || "All" });
   } catch (err) {
     res.status(500).redirect("/login");
@@ -23,11 +25,30 @@ exports.store = async (req, res) => {
     const bookData = req.body;
     bookData.user = req.user._id;
 
-    if (req.file) bookData.file = req.file.path;
     const book = new Book(bookData);
     await book.save();
+
+    if (req.file) {
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const base64File = fileBuffer.toString("base64");
+
+      const blobContent = new BlobContent({
+        content: base64File,
+        mimeType: req.file.mimetype,
+      });
+
+      await blobContent.save();
+
+      const blobBook = new BlobBook({
+        id_book: book._id,
+        id_blob: blobContent._id,
+      });
+      await blobBook.save();
+
+      await blobContent.save();
+    }
+
     req.flash("flash_message", "Book created successfully");
-    // res.json("Book created successfully");
     res.redirect("/books");
   } catch (err) {
     req.flash("flash_message", "Failed to create book");
@@ -38,9 +59,18 @@ exports.store = async (req, res) => {
 exports.show = async (req, res) => {
   try {
     const { id } = req.params;
-    const book = await Book.findById(id);
-    // res.json(book);
-    res.render("books/show", { book });
+    const book = await Book.findById(id).populate("user");
+
+    // Find associated BlobBook and BlobContent
+    const blobBook = await BlobBook.findOne({ book: book._id }).populate(
+      "blob"
+    );
+    let blobContent = null;
+    if (blobBook) {
+      blobContent = await BlobContent.findById(blobBook.blob);
+    }
+
+    res.render("books/show", { book, blobContent });
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -64,26 +94,28 @@ exports.update = async (req, res) => {
       runValidators: true,
     });
     req.flash("flash_message", "Book updated successfully");
-    // res.json("Book updated successfully");
     res.redirect(`/books`);
   } catch (err) {
     req.flash("flash_message", "Failed to update book");
-    // res.json("Failed to update book");
     res.status(500).redirect("/books");
   }
 };
 
-// Menghapus buku
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
-    await Book.findByIdAndDelete(id);
+    const book = await Book.findByIdAndDelete(id);
+
+    const blobBook = await BlobBook.findOne({ book: book._id });
+    if (blobBook) {
+      await BlobContent.findByIdAndDelete(blobBook.blob);
+      await blobBook.delete();
+    }
+
     req.flash("flash_message", "Book deleted successfully");
-    // res.json("Book deleted successfully");
     res.redirect("/books");
   } catch (err) {
     req.flash("flash_message", "Error deleting book");
-    // res.json("Error deleting book");
     res.status(500).redirect("/books");
   }
 };
